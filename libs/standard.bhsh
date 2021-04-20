@@ -1,0 +1,13 @@
+#header
+
+#declare void print(string __out__, ...refs)
+#declare void printl(string __out__)
+#declare void printj(string __out__)
+
+#declare void scan(string __in__, ...refs)
+
+#declare int strlength(string str)
+#declare string strconcat(string str1, string str2)
+
+#declare string convits(int integer)
+#declare int convsti(string str)
