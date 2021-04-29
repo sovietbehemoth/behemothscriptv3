@@ -1,67 +1,134 @@
 import { string_init } from "./variables/strtype.ts";
 import { function_init, FUNCTION_TEMP_STACK } from "./functiondefs/functions.ts";
 import { bracer_master } from "./brace_logic.ts";
-import { function_call_init } from "./functiondefs/functioncall.ts";
+import { function_call_init, interns_call, cur_func } from "./functiondefs/functioncall.ts";
 import { returns_init } from "./functiondefs/functionreturns.ts";
-import int_init from "./variables/inttype.ts";
+import {int_init} from "./variables/inttype.ts";
 import { preprocessor_linker } from "./preprocessor/preprocessor.ts";
+import { array_init } from "./variables/arrtype.ts";
 
+//**Stack containing all functions */
 let FUNCTION_DEF_STACK:Array<any> = [];
 
+//**Stack containing all strings */
 let STRTYPE_DEF_STACK:Array<any> = [];
+
+//**Stack containing all integers */
 let INTTYPE_DEF_STACK:Array<any> = [];
 
+//**Stack containing all imports */
+let IMPORT_DEF_STACK:Array<any> = [];
+
+//**Stack containing all arrays */
+let ARRTYPE_DEF_STACK:Array<any> = [];
+
+//**Current functions return value */
+let CURFUNC_RETURN_VALUE:any = undefined;
+
+let __DEBUG__:boolean = false;
+
+//**Current position in execution */
 let i:number;
+
+//**Continue execution? */
 let cont_exec:boolean = true;
+
+//**Determines whether this is a function */
 let in_function:boolean = false;
-let cur_func:any = undefined;
+
+/**Initialize preprocessor. Always executes before rest of code. Like C this means ALL 
+ * preprocessors are executed regardless of position in code.
+*/
+async function preprocessor_header_execution(raw:string[]): Promise<void> {
+    if (__DEBUG__ === true) console.log("Executing preprocessors...");
+    for (i = 0; i < raw.length; i++) {
+        const data:string = raw[i].trim();
+        const init_word = data.split(" ")[0].trim();
+        if (init_word.startsWith("#")) {
+            if (init_word.trim() === "#debug") __DEBUG__ = true;
+            await preprocessor_linker(data);
+        }
+    }
+    i = 0;
+    if (__DEBUG__ === true) console.log(`Finished preprocessor execution`);
+}
 
 //**Parse data */
-function lexer_exec(data:string, doc:string): void {
+async function lexer_exec(data:string, doc:string, func:boolean): Promise<void> {
     const init_word = data.split(" ")[0].trim();
+    //String init
     if (init_word === "string") {
-        string_init(data);
+        string_init(data, false);
+    //Function init
     } else if (init_word === "define") {
         function_init(data, doc);
         i = i + FUNCTION_TEMP_STACK - 1;
+    //Function return init
     } else if (init_word === "return") {
-        if (in_function === true) {
+        if (func === true) {
             if (cur_func[2] === "void") throw "ParserError: Illegal return in voidtype function";
-            else returns_init(cur_func, data);
+            else await returns_init(cur_func, data);
         } else throw "ParserError: Invalid return";
+    //Integer init
     } else if (init_word === "int") {
         int_init(data);
-    } else if (init_word.startsWith("#")) {
-        preprocessor_linker(data);
+    //Literal init, Literal strings have no referencing capabilities
+    } else if (init_word === "literal") {
+        const shiftforlit:string = data.split("literal")[1].trim();
+        string_init(shiftforlit, true);
+    //Master array initializer
+    } else if (init_word === "array") {
+        array_init(data);
     }
-
-    else {
+    else if (!init_word.startsWith("#") && init_word !== undefined) {
+        console.log(init_word)
         if (cont_exec === true) {
-            for (let i = 0; i < FUNCTION_DEF_STACK.length; i++) {
-                if (init_word.trim().startsWith(FUNCTION_DEF_STACK[i][0].trim())) {
-                    function_call_init(FUNCTION_DEF_STACK[i], data);
-                    cont_exec = false;
+            if (FUNCTION_DEF_STACK.length > 0) {
+                for (let i2 = 0; i2 < FUNCTION_DEF_STACK.length; i2++) {
+                    //console.log(init_word.trim() + " vs " + FUNCTION_DEF_STACK[i2][0].trim())
+                    //Function calls
+                    if (init_word.trim().split("(")[0] === FUNCTION_DEF_STACK[i2][0].trim()) {
+                        await function_call_init(FUNCTION_DEF_STACK[i2], data);
+                        cont_exec = false;
+                        break;
+                    } 
                 }
-            }
+            } else throw "ParserError: Function not found";
         }
+        cont_exec=true;
     }
 }
+
+let contloop:any = false;
 
 //**Pass data to lexer */
-function lexer_init(data: string, ...stacks:any): void {
+async function lexer_init(data: string, ...stacks:any): Promise<void> {
+    //Calculate brace logic
     bracer_master(data);
-    if (stacks[0] === "scope/func") {
-        in_function = true;
-        cur_func = stacks[1];
-        FUNCTION_DEF_STACK = stacks[2];
-        STRTYPE_DEF_STACK = stacks[3];
-    }
     const content:string[] = data.split(";"); 
+    if (in_function === true) console.log(data);
     content.pop();
-    for (i = 0; i < content.length; i++) {
-        lexer_exec(content[i].trim(), data.trim());
-    }
+    await preprocessor_header_execution(content);
+    const execute = (async() => {
+        if (__DEBUG__ === true) console.log(`Executing main file contents...`);
+        for (i = 0; i < content.length; i++) {  
+            await lexer_exec(content[i].trim(), data.trim(), false);
+        }
+        in_function = false;
+    });
+    await execute();
+    if (__DEBUG__ === true) console.log(`Finished compilation of ${i} items`);
 }
 
-export { lexer_init };
-export { FUNCTION_DEF_STACK, STRTYPE_DEF_STACK, INTTYPE_DEF_STACK };
+function stackrm(stack:Array<any>, pos:number, stackd:string): void {
+    const modstack:Array<any> = [];
+    for (let i = 0; i < stack.length; i++) {
+        if (i !== pos) modstack.push(stack[i]);
+    }
+    if (stackd === "int") INTTYPE_DEF_STACK = modstack;
+    else if (stackd === "str") STRTYPE_DEF_STACK = modstack;
+    else if (stackd === "func") FUNCTION_DEF_STACK = modstack;
+}
+
+export { lexer_init, lexer_exec, stackrm, __DEBUG__ };
+export { FUNCTION_DEF_STACK, STRTYPE_DEF_STACK, INTTYPE_DEF_STACK, IMPORT_DEF_STACK, ARRTYPE_DEF_STACK };
