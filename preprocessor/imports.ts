@@ -1,12 +1,16 @@
 import { preprocessor_linker } from "./preprocessor.ts";
+import { IMPORT_DEF_STACK, __DEBUG__ } from "../lexer.ts";
 
 
-function read_file_prep(content: string): void {
+//**file inclusion */ 
+async function read_file_prep(content: string) {
+    if (__DEBUG__ === true) console.log("Performing file import...");
     const importp:string = content.split(" ")[1].trim();
     if (content.includes('"')) {
         const path:string = content.split('"')[1].split('"')[0].trim();
         const feed:any = Deno.readTextFile(path);
         feed.then((buffer:any) => {
+            if (__DEBUG__ === true) console.log(`Opened FileStream for local import '${path}'`);
             const compile:string = buffer.replace(/[\r\n]+/gm, ";").split(";");
             for (let i=0;i<compile.length;i++) {
                 preprocessor_linker(compile[i]);
@@ -19,13 +23,15 @@ function read_file_prep(content: string): void {
         if (__intern__ != true) throw "PreprocessorError: Unrecognized internal import"; else {
             switch (importf) {
                 case "standard":
-                    const feed:any = Deno.readTextFile("./libs/standard.bhs");
-                    feed.then((buffer:any) => {
-                        const compile:string = buffer.replace(/[\r\n]+/gm, ";").split(";");
-                        for (let i=0;i<compile.length;i++) {
-                            preprocessor_linker(compile[i]);
-                        }
-                    })
+                    if (__DEBUG__ === true) console.log("Importing standard library");
+                    IMPORT_DEF_STACK.push([importf, true]);
+                    const feed:any = await Deno.readTextFile("./libs/standard.bhs");
+                    if (__DEBUG__ === true) console.log(`Opened FileStream for internal import '${importf}'`);
+                    const compile:string = feed.replace(/[\r\n]+/gm, ";").split(";");
+                    for (let i=0;i<compile.length;i++) {
+                        //console.log(compile[i])
+                        preprocessor_linker(compile[i]);
+                    }
                     break;
             }
         }
