@@ -1,12 +1,13 @@
 import { decode_value } from "../def.ts";
-import { STRTYPE_DEF_STACK } from "../lexer.ts";
-
-//**Stack containing all var types */
+import { STRTYPE_DEF_STACK, FUNCTION_DEF_STACK, __DEBUG__ } from "../lexer.ts";
+import { function_call_init } from "../functiondefs/functioncall.ts";
 
 //**Ensure the variable name is legal */
 function scan_var_name(varname: string): void {
+    if (__DEBUG__ === true) console.log(`Checking legality of variable name...`);
+    //Check for reserved words, some awaiting implementation
     const reserved_words = new Boolean(varname === "string" || varname === "const" || varname === "define" ||
-                                varname === "for" || varname === "int");
+                                varname === "for" || varname === "int" || varname === "literal");
     if (reserved_words === false) {
         for (let i = 0; i < varname.length; i++) {
             switch (varname[i]) {
@@ -82,6 +83,7 @@ function scan_var_name(varname: string): void {
 
 //**Parse the string itself, deals with references */
 function strparse_literal(content: string, refs: string): string {
+    if (__DEBUG__ === true) console.log(`Decoding string references...`);
     const refsarray:string[] = refs.split(",");
     let string_frmt = [];
     let refs_c:number = 0;
@@ -111,24 +113,51 @@ function strparse_literal(content: string, refs: string): string {
 }
 
 //**Define where the string should begin */
-function strparse(content: string) {
+async function strparse(content: string, literal:boolean) {
     let str: string[] = [];
+    let refs: string[] = [];
+    let funcname: string[] = [];
     let instr: boolean = false;
+    let infunc: boolean = false;
+    let foundparams: boolean = false;
     let pass:string;
     for (let i = 0; i < content.length; i++) {
-        if (content[i] === '"' && instr === false) {
+        if (content[i] === '"' && instr === false && infunc === false) {
             instr = true;         
         } else if (instr === true) {
-            if (content[i] === '"' && content[i-1] != "\\") {
+            if (content[i] === '"' && content[i-1] != "\\" && content[i+1] === undefined || content[i+1] === ",") {
                 instr = false;
-                return strparse_literal(str.join(""), content.substring(i+2).trim());
+                if (literal === false) return strparse_literal(str.join(""), content.substring(i+2).trim());
+                else return str.join("");
             } else str.push(content[i]);
+        } else {
+            if (foundparams === false && instr === false && content[i] !== "(" && content[i] !== ")") {
+                funcname.push(content[i]);
+                infunc = true;
+            }
+            if (content[i] === "(" && instr === false) {
+                foundparams = true;
+            }
+            if (foundparams === true && content[i] !== "(" && content[i] !== ")") {
+                refs.push(content[i]);
+            }
+            if (content[i] === ")" && foundparams === true) {
+                for (let i2 = 0; i2 < FUNCTION_DEF_STACK.length; i2++) {
+                    if (FUNCTION_DEF_STACK[i2][0].trim() === funcname.join("").trim()) {
+                        if (FUNCTION_DEF_STACK[i2][2] === "string") {
+                            await function_call_init(FUNCTION_DEF_STACK[i2], content);
+                            return STRTYPE_DEF_STACK[STRTYPE_DEF_STACK.indexOf(FUNCTION_DEF_STACK[i2][0].trim())];
+                        } else throw "ParserError: Unexpected type";
+                    }
+                }
+            }
         }
     }
 }
 
 //**Pushes the value of the variable to the variable stack */
-function string_init(content: string): void {
+async function string_init(content: string, literal:boolean): Promise<void> {
+    
     let pass:string[] = [];
     let name:string[] = [];
 
@@ -140,11 +169,14 @@ function string_init(content: string): void {
         } else if (cont === true) pass.push(content[i]);
         else if (namepush === true) name.push(content[i]);
     }
+    //push string to stack
     const strname:string = name.join("").split("string")[1].trim();
     scan_var_name(strname); 
-    const res = strparse(pass.join("").trim());
+    const res = await strparse(pass.join("").trim(), literal);
     STRTYPE_DEF_STACK.push([res, strname]);
-    console.log(res);
+    if (__DEBUG__ === true) console.log(`Appended strtype '${strname}' to stack`);
+    //console.log(res, strname);
+    //console.log(strname);
 }
 
 export { string_init, scan_var_name };
