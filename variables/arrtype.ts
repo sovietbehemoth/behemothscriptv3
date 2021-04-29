@@ -74,7 +74,6 @@ function parsearrayint(array:string, name:string, type:types) {
     let cont_exec:boolean = true;
     for (let i = 0; i < arr.length; i++) {
         const arrmemb:string = arr[i].trim();
-        console.log(arrmemb)
         if (checkstr(arr[i]) === true) {
             mastrray.push(parseInt(arr[i]));
         } else if (isfunction(arr[i]) === true) {
