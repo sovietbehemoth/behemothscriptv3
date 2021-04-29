@@ -11,3 +11,18 @@
 
 #declare string convits(int integer)
 #declare int convsti(string str)
+#declare string convsats(array )
+
+#declare void strappend(array string __array__)
+#declare void strpop(array string __array__)
+#declare void strshift(array string __array__)
+
+#declare void intappend(array int __array__)
+#declare void intpop(array int __array__)
+#declare void intshift(array int __array__)
+
+#declare string strat(array string __array__)
+#declare int intat(array int __array__)
+
+#declare struct post(string url, struct ?headers, struct ?content)
+#declare struct get(string url, struct ?headers)
