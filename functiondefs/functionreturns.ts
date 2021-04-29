@@ -1,6 +1,7 @@
 import { STRTYPE_DEF_STACK } from "../lexer.ts";
 
-function returns_init(func: Array<any>, content:string): void {
+//**Function returns, TODO: implement other types */
+async function returns_init(func: Array<any>, content:string): Promise<void> {
     const rettype = func[2];
     switch (rettype) {
         case "string":
