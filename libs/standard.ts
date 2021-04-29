@@ -1,5 +1,5 @@
 import { STRTYPE_DEF_STACK, __DEBUG__, stackrm } from "../lexer.ts";
-import { INTTYPE_DEF_STACK } from "../lexer.ts";
+import { INTTYPE_DEF_STACK, ARRTYPE_DEF_STACK } from "../lexer.ts";
 import { decode_value } from "../def.ts";
 import { checkstr } from "../variables/inttype.ts";
 
@@ -58,6 +58,38 @@ function stdout(outliteral: string[]): void{
     if (__DEBUG__ === true) console.log(`Sent data to stdout`);
 }
 
+function membat(array:any, ref:any, index:any, type:string) {
+    let indexxed:boolean = false;
+    let vartype:Array<any> = [];
+    for (let i = 0; i < ARRTYPE_DEF_STACK.length; i++) {
+        if (array === ARRTYPE_DEF_STACK[i][1].trim()) {
+            indexxed = true;
+            vartype = ARRTYPE_DEF_STACK[i];
+            break;
+        }
+    }
+    if (indexxed === true) {
+        const mainarr:Array<any> = vartype[0];
+        if (type === "str") {
+            for (let i = 0; i < STRTYPE_DEF_STACK.length; i++) {
+                if (STRTYPE_DEF_STACK[i][1] === ref.trim()) {
+                    stackrm(STRTYPE_DEF_STACK, i, "str");
+                    STRTYPE_DEF_STACK.push([mainarr[parseInt(index)], ref]);
+                    break;
+                }
+            }
+        } else if (type === "int") {
+            for (let i = 0; i < INTTYPE_DEF_STACK.length; i++) {
+                if (INTTYPE_DEF_STACK[i][1] === ref.trim()) {
+                    stackrm(INTTYPE_DEF_STACK, i, "int");
+                    INTTYPE_DEF_STACK.push([mainarr[parseInt(index)], ref]);
+                    break;
+                }
+            }
+        }
+    } else throw "ParserError: Undefined reference to array";
+}
+
 function strappend(args: any): void {
 
 }
@@ -66,7 +98,7 @@ function strappend(args: any): void {
 /*Casts integer to string and string to integer, actively modifies the stack. Appends new value to END of stack, it may be better practice to replace the value in its
 current position although it SHOULDNT matter significantly.
 */
-async function castingintstr(method:number, int?:any, str?:string): Promise<void> {
+async function castingintstr(method:number, int?:any, str?:any): Promise<void> {
     if (method === 1) {
         const inttarget:Array<any> = INTTYPE_DEF_STACK[INTTYPE_DEF_STACK.indexOf(int)];
         stackrm(inttarget, INTTYPE_DEF_STACK.indexOf(int), int);
@@ -91,13 +123,36 @@ async function interns_switch(name:any, args:any):Promise<void> {
             break;
         
         case "convits":
-            const int:string = args[0].trim();
+            //console.log(args);
+            const int:any = args[0].trim();
             for (let i = 0; i < INTTYPE_DEF_STACK.length; i++) {
                 if (INTTYPE_DEF_STACK[i][1] === int) {
                     castingintstr(1, INTTYPE_DEF_STACK[i], "");
                 }
             }
             break;
+        case "convsti":
+            //console.log(args)
+            const str:any = args[0].trim();
+            for (let i = 0; i < STRTYPE_DEF_STACK.length; i++) {
+                if (STRTYPE_DEF_STACK[i][1] === str) {
+                    castingintstr(1, 1, STRTYPE_DEF_STACK[i]);
+                }
+            }
+            break;
+
+
+        case "strmemb":
+            const strarray:any = args[0].trim();
+            const strref:any = args[1].trim();
+            const strindex:any = args[2].trim();
+            membat(strarray, strref, strindex, "str");
+            break;
+        case "intmemb":
+            const intarray:any = args[0].trim()
+            const intref:any = args[1].trim();
+            const intindex:any = args[2].trim();
+            membat(intarray, intref, intindex, "int");
     }
 }
 
