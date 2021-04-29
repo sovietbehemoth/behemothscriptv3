@@ -1,3 +1,5 @@
+import {__DEBUG__} from "./lexer.ts";
+
 let RIGHT_BRACE_STACK:Array<any> = [];
 let LEFT_BRACE_STACK:Array<any> = [];
 
@@ -46,6 +48,7 @@ function bracer_master(fulldocument:any) {
         l.push(bracer(full)[0]);
         r.push(bracer(full)[1]);
     }
+    if (__DEBUG__ === true) console.log("Performed brace pairing logic");
 }
 
 //[ {, {, }, } ]
