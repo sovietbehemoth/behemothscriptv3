@@ -14,7 +14,7 @@ const legalchar = new Boolean(glob.toLowerCase() === "a" || glob.toLowerCase() =
                               glob.toLowerCase() === "s" || glob.toLowerCase() === "t" || glob.toLowerCase() === "u" || glob.toLowerCase() === "v" || glob.toLowerCase() === "w" || glob.toLowerCase() === "x" || glob.toLowerCase() === "y" || glob.toLowerCase() === "z");
 
 //**Determine the value of code */
-function decode_value(content:any, expected:types): any {
+function decode_value(content:any, expected:types, exep?:boolean): any {
     if (__DEBUG__ === true) console.log(`Decoding ${expected}...'`);
     let returnvalue:any;
     let located:boolean = false;
