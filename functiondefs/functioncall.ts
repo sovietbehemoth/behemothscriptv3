@@ -12,25 +12,37 @@ function isinternal(name:string):boolean {
         case "convsti": return true; break;
         case "convits": return true; break;
 
+        case "intmemb": return true; break;
+        case "strmemb": return true; break;
+
+        case "intappend": return true; break;
+        case "strappend": return true; break;
+
+        case "lengthof": return true; break;
+
         default: return false; break;
     }
 }
 
-let instr:any = "";
+
 
 //**Format */
 async function interns_call(name:string, data:string):Promise<void> {
+    let instr:any = "";
     instr = "false";
     const args:any = data.split("(")[1].split(")").join("").trim();
     let argarray:any = [];
+    let typearr:any = [];
     if (!args.length) {
         await interns_switch(name, ["void"]);
     } else {
         let curmemb:any = [];
         for (let i = 0; i < args.length; i++) {
             if (args[i] === '"' && instr === "false") {
+                curmemb.push(args[i]);
                 instr = "true";
             } else if (args[i] === '"' && instr === "true") {
+                curmemb.push(args[i]);
                 instr = "false";
             } else if (args[i] === "," && instr === "false") {
                 argarray.push(curmemb.join("").trim());
@@ -38,8 +50,8 @@ async function interns_call(name:string, data:string):Promise<void> {
                 instr = "false";
                 continue;
             } else curmemb.push(args[i]);
-            if (i === args.length - 1) argarray.push(curmemb.join("").trim())
         }
+        argarray.push(curmemb.join("").trim())
         await interns_switch(name, argarray);
     }
 }
@@ -59,7 +71,8 @@ async function function_call_init(func:Array<any>, content:string):Promise<void>
                 if (typels[1].startsWith("?") && args[i] === undefined) {
                     exec = exec + `literal ${typels[0]} ${typels[1]};\n`
                 } else {
-                exec = exec + `literal ${typels[0]} ${typels[1]} = ${args[i]};\n`;
+                if (typels[0].trim() === "string") exec = exec + `literal ${typels[0]} ${typels[1]} = ${args[i]};\n`;
+                else if (typels[0].trim() === "int") exec = exec + `int ${typels[1]} = ${args[i]};\n`;
                 }
             }
             if (__DEBUG__ === true) console.log(`Appended arguments to function execution`);
