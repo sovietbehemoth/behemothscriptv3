@@ -1,7 +1,7 @@
 import { STRTYPE_DEF_STACK, __DEBUG__, stackrm } from "../lexer.ts";
 import { INTTYPE_DEF_STACK, ARRTYPE_DEF_STACK } from "../lexer.ts";
 import { decode_value } from "../def.ts";
-import { checkstr } from "../variables/inttype.ts";
+import { checkstr, eqparse } from "../variables/inttype.ts";
 
 //**Send to standard out with formatted output, syntax identical to printf() in c */
 async function stdout_format(str: string[]): Promise<void> {
@@ -49,7 +49,7 @@ async function stdout_format(str: string[]): Promise<void> {
         } else finalform.push(regex[i]);
     }
     //send to stdout
-    console.log(finalform.join("").trim());
+    console.log(finalform.join("").trim().substring(1, finalform.join("").trim().length-1));
     if (__DEBUG__ === true) console.log(`Sent data to stdout`);
 }
 
@@ -90,10 +90,73 @@ function membat(array:any, ref:any, index:any, type:string) {
     } else throw "ParserError: Undefined reference to array";
 }
 
-function strappend(args: any): void {
-
+function arrappend(array:any, subject:any, type:string): void {
+    for (let i = 0; i < ARRTYPE_DEF_STACK.length; i++) {
+        if (ARRTYPE_DEF_STACK[i][1] === array.trim()) {
+            if (ARRTYPE_DEF_STACK[i][2] === "string" && type === "str" && ARRTYPE_DEF_STACK[i][1].trim() === array.trim()) {
+                let located:boolean = false;
+                if (subject.startsWith('"') && subject.endsWith('"')) {
+                    let membarray:Array<any> = ARRTYPE_DEF_STACK[i][0];
+                    membarray.push(subject.substring(1, subject.length - 1));
+                    stackrm(ARRTYPE_DEF_STACK, i, "arr");
+                    ARRTYPE_DEF_STACK.push([membarray, array.trim(), "string"]);
+                } else {
+                    for (let i2 = 0; i2 < STRTYPE_DEF_STACK.length; i2++) {
+                        if (STRTYPE_DEF_STACK[i2][1].trim() === subject.trim()) {
+                            located = true;
+                            let membarray:Array<any> = ARRTYPE_DEF_STACK[i][0];
+                            membarray.push(STRTYPE_DEF_STACK[i2][0].trim());
+                            stackrm(ARRTYPE_DEF_STACK, i, "arr");
+                            ARRTYPE_DEF_STACK.push([membarray,array.trim(),"string"]);
+                            break;
+                        }
+                    }
+                }
+                
+            } else if (ARRTYPE_DEF_STACK[i][2] === "int" && type === "int" && ARRTYPE_DEF_STACK[i][1].trim() === array.trim()) {
+                let loc:boolean = false;
+                if (checkstr(subject) === true) {
+                    let membarray:Array<any> = ARRTYPE_DEF_STACK[i][0];
+                    membarray.push(parseInt(subject));
+                    stackrm(ARRTYPE_DEF_STACK, i, "arr");
+                    ARRTYPE_DEF_STACK.push([membarray, array.trim(), "int"]);
+                    loc = true;
+                } else {
+                    for (let i2 = 0; i2 < INTTYPE_DEF_STACK.length; i2++) {
+                        if (INTTYPE_DEF_STACK[i2][1] === subject) {
+                            let membarray:Array<any> = ARRTYPE_DEF_STACK[i][0];
+                            membarray.push(INTTYPE_DEF_STACK[i2][0]);
+                            stackrm(ARRTYPE_DEF_STACK, i, "arr");
+                            ARRTYPE_DEF_STACK.push([membarray, array.trim(), "int"]);
+                            loc = true;
+                            break;
+                        }
+                    }
+                    if (loc === false) {
+                        let membarray:Array<any> = ARRTYPE_DEF_STACK[i][0];
+                        membarray.push(eqparse(subject));
+                        stackrm(ARRTYPE_DEF_STACK, i, "arr");
+                        ARRTYPE_DEF_STACK.push([membarray, array.trim(), "int"]);
+                    }
+                }
+            }
+        }
+    }
 }
 
+function lengthof(array:any, ref:any): void {
+    for (let i = 0; i < ARRTYPE_DEF_STACK.length; i++) {
+        if (ARRTYPE_DEF_STACK[i][1].trim() === array.trim()) {
+            const len:number = ARRTYPE_DEF_STACK[i][0].length;
+            for (let i2 = 0; i2 < INTTYPE_DEF_STACK.length; i2++) {
+                if (INTTYPE_DEF_STACK[i2][1].trim() === ref.trim()) {
+                    stackrm(INTTYPE_DEF_STACK, i2, "int");
+                    INTTYPE_DEF_STACK.push([len - 1, ref.trim()]);
+                }
+            }
+        }
+    }
+}
 
 /*Casts integer to string and string to integer, actively modifies the stack. Appends new value to END of stack, it may be better practice to replace the value in its
 current position although it SHOULDNT matter significantly.
@@ -153,6 +216,24 @@ async function interns_switch(name:any, args:any):Promise<void> {
             const intref:any = args[1].trim();
             const intindex:any = args[2].trim();
             membat(intarray, intref, intindex, "int");
+            break;
+        
+        case "strappend":
+            const strarr:any = args[0].trim();
+            const strsubject:any = args[1].trim()
+            arrappend(strarr, strsubject, "str");
+            break;
+        case "intappend":
+            const intarr:any = args[0].trim();
+            const intsubject:any = args[1].trim();
+            arrappend(intarr, intsubject, "int");
+            break;
+
+        case "lengthof":
+            const anyarr:any = args[0].trim();
+            const refto:any = args[1].trim();
+            lengthof(anyarr, refto);
+            break;
     }
 }
 
