@@ -1,17 +1,3 @@
 #import <standard>;
 
-class that {
-    constructor(string this) {
-        print("d");
-    };
-
-    private method this(void) {
-        print("hello");
-    };
-
-    public method that(void) {
-        dothis;
-    };
-};
-
-object discord = that("url");
+print("Hello, World!");
