@@ -1,9 +1,0 @@
-class compiler {
-    constructor(void) {
-        
-    };
-    
-    public method exit(int code): int {};
-};
-
-object behemoth = compiler();
