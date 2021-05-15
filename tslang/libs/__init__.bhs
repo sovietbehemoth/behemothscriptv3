@@ -1,0 +1,58 @@
+//Boolean type;
+restrict int bool = 1|0;
+
+//Boolean type declaration;
+int true = 0;
+int false = 1;
+
+class compiler {
+    constructor(void) {
+        
+    };
+    
+    public method exit(int code): int {};
+    
+    public method error_noexit(string cause, string error, string highlight, string creator): void {};
+    public method error_exit(string cause, string error, string highlight, string creator): void {};
+};
+
+//File intents;
+restrict string intentf = "r"|"w"|"rw";
+
+class fopen {
+    private string path;
+    private string intent;
+
+    constructor(string __path__, *intentf __intent__) {
+        this path = __path__;
+        this intent = __intent__;
+    };
+
+    public method buffer_read(int buffer): string {
+        string prep = this path;
+        string adj = "./%s", prep;
+        string res = fbuffer_scan(adj, buffer);
+        return res;
+    };
+    public method read(void): string {
+        string prep = this path;
+        string adj = "./%s", prep;
+        string res = file_read(adj);
+        return res;
+    };
+    public method close(void): int {};
+};
+
+
+
+
+class __http__ {
+    constructor(void) {};
+
+    public method get(string url, typedef struct headers): struct {};
+    public method post(string url, typedef struct headers, typedef struct content): struct {};
+};
+
+
+object behemoth = compiler();
+object http = __http__();

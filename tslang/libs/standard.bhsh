@@ -1,0 +1,45 @@
+#header
+
+#declare class compiler
+#declare %compiler public method int exit(int code)
+#declare %compiler public method int pipe(string __fpf__, string intent)
+
+#declare void print(string __out__, ...refs)
+#declare void printl(string __out__)
+#declare void printj(string __out__)
+
+#declare restrict streams
+#declare restrict f_intent
+#declare void fprintf(*streams method, string __buffer__)
+#declare *file fopen(string path, string intent)
+#declare int fclose(*file fs)
+#declare string fbuffer_scan(string path)
+#declare string file_read(string fpath)
+
+#declare void scan(string __in__, ...refs)
+
+#declare int strlength(string str)
+#declare string strconcat(string str1, string str2)
+
+#declare string convits(int integer)
+#declare int convsti(string str)
+#declare string convsats(array )
+
+#declare void strappend(array string __array__)
+#declare void strpop(array string __array__)
+#declare void strshift(array string __array__)
+
+#declare void intappend(array int __array__)
+#declare void intpop(array int __array__)
+#declare void intshift(array int __array__)
+
+#declare string strconcat(string basestr, string append)
+#declare *bool strcmp(string str1, string str2)
+
+#declare string strmemb(array string __array__, int __at__)
+#declare int intmemb(array int __array__, int __at__)
+
+#declare int lengthof(any item)
+
+#declare struct post(string url, struct ?headers, struct ?content)
+#declare struct get(string url, struct ?headers)
