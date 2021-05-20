@@ -1,0 +1,56 @@
+#header
+
+#declare class compiler
+#declare %compiler public method int exit(int code)
+#declare %compiler public method int pipe(string __fpf__, string intent)
+
+#declare void print(string __out__, ...refs)
+#declare void printl(string __out__)
+#declare void printj(string __out__)
+#declare void printv(any __var__)
+
+#declare restrict streams
+#declare restrict f_intent
+#declare void fprintf(*streams method, string __buffer__)
+#declare *file fopen(string path, string intent)
+#declare int fclose(*file fs)
+#declare string fbuffer_scan(string path)
+#declare string file_read(string fpath)
+
+#declare void scan(string __in__, ...refs)
+
+#declare int strlength(string str)
+#declare string strconcat(string str1, string str2)
+
+#declare string convits(int integer)
+#declare int convsti(string str)
+#declare string convsats(array arr)
+
+#declare void append(array (nontype) __array__, any __subject__)
+
+#declare *bool strcmp(string str1, string str2)
+
+#declare __COMPILER_ANY_TYPE__ member(array (nontype) __array__, int __at__)
+
+#declare int lengthof(any item)
+
+#declare struct post(string url, struct ?headers, struct ?content)
+#declare struct get(string url, struct ?headers)
+
+#index      print            Print to stdout, syntax identical to C printf syntax
+#index      printl           Print a string literal to stdout
+#index      printv           Print any variable to stdout
+#index      printj           AWAITING IMPLEMENTATION (Will print string formatted in JavaScript string manipulation syntax)
+#index      fprintf          Print to specific pipe, WILL print literal
+#index      fbuffer_scan     Read file stream with strict buffer length specified in parameters
+#index      file_read        Read file stream
+#index      scan             AWAITING IMPLEMENTATION (Will read stdin)
+#index      strlength        DEPRICATED get length of string (Use lengthof() instead)
+#index      strconcat        Concatate a string onto another string, WILL alter input string, returns resulting string
+#index      convits          Cast integer to string
+#index      convsti          Cast string to integer (does NOT allow for non integer characters)
+#index      convsats         AWAITING IMPLEMENTATION (Will cast array to string)
+#index      append           Append string onto array
+#index      strcmp           Compare 2 strings, returns true if equal and false if not (t/f can be interpreted as 1 or 0)
+#index      member           Returns member of array specified in __at__
+#index      lengthof         Returns length of item (non type specific)
