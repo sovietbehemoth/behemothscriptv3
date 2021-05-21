@@ -1,0 +1,12 @@
+class WebSocket {
+    public string urlf;
+    constructor(string url) {
+        this urlf = url;
+    };
+
+    public method onopen(__COMPILER_ANY_TYPE__ callback): void {};
+
+    public method send(string __str__): void {};
+    public method recv(__COMPILER_ANY_TYPE__ callback): void {};
+    public method close(void): int {};
+};

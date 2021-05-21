@@ -1,0 +1,12 @@
+
+
+
+class os_c {
+    constructor(void) {};
+
+    public string os;
+    public string machine;
+    public method shutdown(void): void {};
+};
+
+object sys = os_c();
