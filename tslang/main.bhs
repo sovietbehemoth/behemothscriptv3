@@ -1,5 +1,0 @@
-#import <standard>;
-
-object res = http.get("https://www.google.com/");
-
-print("CODE: %d\nTEXT: %s",res.code,res.url);
