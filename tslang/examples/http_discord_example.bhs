@@ -1,0 +1,47 @@
+//This example shows an HTTP request using the BehemothScript HTTP library to Discord.;
+
+//Import standard library.;
+#import <standard>;
+
+
+//Our Discord bot token and URL endpoint.;
+string ENV_TOKEN = "BOT TOKEN HERE";
+literal string url = "https://discord.com/api/channels/CHANNEL_ID_HERE/messages";
+
+//Contents object.;
+class contents {
+    public string content;
+
+    constructor(string content) {
+        this content = content;
+    };
+};
+
+//Headers object.;
+class headers {
+    public string Authorization = "Bot %s", ENV_TOKEN;
+    public string Content-Type = "application/json";
+
+    constructor(void) {};
+};
+
+
+
+//Function to send message.;
+define message_send(string content): object {
+
+    //Initialize objects.;
+    object http_content = contents(content);
+    object http_headers = headers(bot_token);
+
+    //Serialize objects to JSON.;
+    string jsonified_contents = class_to_json_string(http_content);
+    string jsonified_headers = class_to_json_string(http_headers);
+
+    //Perform the request.;
+    object response = http.post(url, jsonified_headers, jsonified_contents);
+    
+    return response;
+};
+
+message_send("hello");
