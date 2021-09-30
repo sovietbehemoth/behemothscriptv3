@@ -1,0 +1,14 @@
+//This example performs an HTTP GET request using the BehemothScript HTTP library.
+
+//Import standard library.;
+#import <standard>;
+
+//Perform request.;
+object response = http.get("https://www.google.com");
+
+//Output response.;
+
+print("~~~ Request To %s ~~~", response.url);
+
+print(" - Status: %d", response.code);
+print(" - Response Text --> \n%s", response.text);
