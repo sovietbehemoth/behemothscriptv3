@@ -1,0 +1,25 @@
+//The restrict key word.;
+
+//The following is similar to a typedef in C. Values can only be the following.;
+restrict int only_numbers = 1 | 2;
+
+
+//A variable with the custom type.;
+*only_numbers number = 1;
+
+//If violated we get an error.                                                          ;
+//      ParserError (Line 5): Value does not conform to set restriction                 ;
+//      *only_numbers number = 4                                                        ;
+//                             ~                                                        ;
+
+
+//Using this we can implement our own Boolean type.;
+
+//First we create the type.;
+restrict int bool = 0 | 1;
+
+//True as 1.;
+*bool true = 1;
+
+//False as 0.;
+*bool false = 0;
