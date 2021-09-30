@@ -1,0 +1,41 @@
+//THIS EXAMPLE SHOWS AN HTTP REQUEST TO SEND A MESSAGE TO A DISCORD CHANNEL.;
+
+
+
+
+#import <standard>;
+
+string ENV_TOKEN = "BOT TOKEN HERE";
+
+class contents {
+    public string content;
+
+    constructor(string content) {
+        this content = content;
+    };
+};
+
+class headers {
+    public string Authorization = "Bot %s", ENV_TOKEN;
+    public string Content-Type = "application/json";
+
+    constructor(void) {};
+};
+
+
+
+
+define message_send(string content): object {
+    object http_content = contents(content);
+    object http_headers = headers(bot_token);
+
+    string jsonified_contents = class_to_json_string(http_content);
+    string jsonified_headers = class_to_json_string(http_headers);
+
+    literal string url = "https://discord.com/api/channels/825201402095599658/messages";
+
+    object response = http.post(url, jsonified_headers, jsonified_contents);
+    return response;
+};
+
+message_send("hello");
