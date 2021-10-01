@@ -132,8 +132,8 @@ async function http_call(content:string, data:any): Promise<any> {
                         }
                     }
                 } else {
-                    const header_json = JSON.parse(await strparse(argarray[1].trim(),true));
-                    const res:Response = await fetch(await strparse(argarray[0],true), {headers:header_json}).catch(async (error): Promise<any> => {
+                    const header_json = JSON.parse(await strparse(argarray[0].trim(),true));
+                    const res:Response = await fetch(await strparse(argarray[1],true), {headers:header_json}).catch(async (error): Promise<any> => {
                         await errorf(data, error.toString().split("TypeError:")[1].trim(),argarray[0]);
                     });   
                     for (let i = 0; i < OBJECTTYPE_DEF_STACK.length; i++) {
