@@ -15,7 +15,7 @@ async function compiler_call(content:string): Promise<any> {
         const funcname:string = content.split("(")[0].trim();
         let instr: any = "false";
         let argarray: Array<any> = [];
-        let curmemb:any = [];
+        let curmemb:any = []; 
         let dataf:string = content.substring(content.indexOf("(")+1,content.lastIndexOf(')'));
         for (let i5 = 0; i5 < dataf.length; i5++) {
             if (dataf[i5] === '"' && instr === "false") {
